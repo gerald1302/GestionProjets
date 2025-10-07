@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur { 
+  id            Int             @id @default(autoincrement())
+  nom           String
+  email         String          @unique
+  motDePasse    String
+  role          Role            @default(MEMBRE)
+  projets       Projet[]        @relation("ChefProjets")
+  taches        Tache[]         @relation("AssigneTaches")
+  projetsMembre ProjetMembre[]  // ✅ relation N-N avec Projet
+  commentaires  Commentaire[]   // <-- Ajouté : relation avec Commentaire
+  notifications Notification[]  // <-- Ajouté : relation avec Notification
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Projet {
+  id            Int             @id @default(autoincrement())
+  nom           String
+  description   String?
+  chefId        Int
+  chef          Utilisateur     @relation("ChefProjets", fields: [chefId], references: [id])
+  membres       ProjetMembre[]  // ✅ relation N-N avec Utilisateur
+  taches        Tache[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ProjetMembre {
+  id           Int          @id @default(autoincrement())
+  utilisateurId Int
+  projetId     Int
+
+  utilisateur  Utilisateur  @relation(fields: [utilisateurId], references: [id]) // ✅ côté opposé
+  projet       Projet       @relation(fields: [projetId], references: [id])      // ✅ côté opposé
+
+  @@unique([utilisateurId, projetId]) // éviter doublons
+}
+
+model Tache {
+  id           Int          @id @default(autoincrement())
+  titre        String
+  description  String?
+  projetId     Int
+  projet       Projet       @relation(fields: [projetId], references: [id])
+  assigneAId   Int?
+  assigneA     Utilisateur? @relation("AssigneTaches", fields: [assigneAId], references: [id])
+  statut       String        @default("EN_ATTENTE")
+  commentaires Commentaire[] // <-- Ajouté : relation avec Commentaire
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+model Commentaire {
+  id        Int         @id @default(autoincrement())
+  contenu   String
+  auteurId  Int
+  tacheId   Int
+  auteur    Utilisateur @relation(fields: [auteurId], references: [id])
+  tache     Tache       @relation(fields: [tacheId], references: [id])
+  createdAt DateTime    @default(now())
+}
+
+model Notification {
+  id            Int         @id @default(autoincrement())
+  message       String
+  utilisateurId Int
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
+  lu            Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+}
+
+
+enum Role {
+  ADMIN
+  CHEF
+  MEMBRE
+  CLIENT
+}
