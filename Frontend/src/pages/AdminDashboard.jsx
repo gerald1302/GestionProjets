@@ -1,5 +1,4 @@
 // src/pages/AdminDashboard.jsx
-// src/pages/AdminDashboard.jsx
 import React, { useState } from "react";
 import Sidebar from "../components/AdminComponents/Sidebar";
 import TopBar from "../components/AdminComponents/TopBar";
@@ -18,7 +17,7 @@ const AdminDashboard = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Contenu principal */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-y-auto">
         <TopBar />
 
         {activeTab === "dashboard" && <DashboardContent />}

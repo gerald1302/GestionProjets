@@ -1,3 +1,4 @@
+// BarChartCard.jsx
 import React from "react";
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 
